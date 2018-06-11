@@ -1,5 +1,7 @@
-from six import string_types
+from rest_framework_simplejwt.tokens import RefreshToken
+from six import string_types, text_type
 from importlib import import_module
+from django.conf import settings
 
 
 def import_callable(path_or_callable):
@@ -16,7 +18,7 @@ def default_create_token(token_model, user, serializer):
     return token
 
 
-def jwt_encode(user):
+def default_jwt_encode(user):
     try:
         from rest_framework_jwt.settings import api_settings
     except ImportError:
@@ -27,3 +29,20 @@ def jwt_encode(user):
 
     payload = jwt_payload_handler(user)
     return jwt_encode_handler(payload)
+
+
+def simple_jwt_encode(user):
+    refresh = RefreshToken.for_user(user)
+
+    token = {
+        'refresh': text_type(refresh),
+        'access': text_type(refresh.access_token)
+    }
+    return token
+
+
+def jwt_encode(user):
+    if getattr(settings, 'REST_USE_SIMPLE_JWT', False):
+        return simple_jwt_encode(user)
+    else:
+        return default_jwt_encode(user)
