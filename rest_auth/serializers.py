@@ -134,7 +134,7 @@ class JWTSerializer(serializers.Serializer):
     """
     Serializer for JWT authentication.
     """
-    token = serializers.CharField()
+    token = serializers.DictField() if getattr(settings, 'REST_USE_SIMPLE_JWT', False) else serializers.CharField()
     user = serializers.SerializerMethodField()
 
     def get_user(self, obj):
